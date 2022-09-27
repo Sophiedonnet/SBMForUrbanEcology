@@ -1,0 +1,76 @@
+---
+title: "Notes pour étude des pieds d'arbres"
+author: "Sophie Donnet"
+date: "2022-09-27"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Dans la suite $Y$ est la matrice de mon réseau site/plantes (les sites sont en ligne).
+
+
+## Introduction de covariables
+
+
+On peut essayer de comprendre les interactions en fonction des covariables qu'on a à disposition
+
+$$Y_{ij} | Z_i = k, Z_j = l \sim \mathcal{B}(\alpha_{kl})$$
+
+Devient alors 
+
+
+$$Y_{ij} | Z_i = k, Z_j = l \sim \mathcal{B}(\text{logit}(\alpha_{kl} + \beta^T x_{ij}))$$
+où $x_{ij}$ est un vecteur de covariables défini sur le couple $(i,j)$.
+
+
+- Exemple 1 : $x^G_{ij} = 1$ si le site $i$ a une grille, $0$ sinon. 
+ 
+
+- Exemple 2 : espèce d'arbre (ou groupes d'espèces à définir) ( $e \in {1, \dots E}$) il faut définir $E-1$ colonnes pour encoder ce facteur en une covariables numérique
+$$(x_{ij}^1, \dots,  x_{ij}^e , \dots x_{ij}^{E-1})= (0,\dots,1,\dots,0)$$ si l'arbre du pied $i$ est d'espèce $e$ 0 sinon. 
+
+
+Dans ce cas on aurait comme vecteur de covariables
+
+$$x_{ij} = (x^G_{ij} , x_{ij}^1, \dots,  x_{ij}^e , \dots x_{ij}^{E-1})$$
+Dans le code il faut rentrer une liste de matrices : chaque matrice représente $1$ covariables ($x^G$, puis $x^1$,  etc..). 
+Chaque matrice est de taille celle du réseau. 
+Donc il faut recopier la covariable sur les sites dans autant de colonnes qu'on a d'espèces de plantes. 
+
+
+On pourrait aussi constuire le réseau site/site  (Y^S) qui comterait le nombre d'espèces en commun entre chaque paire de site. 
+$$ Y^S =  Y (\,^TY)$$
+On obtiendrait alors un comptage et on pourrait regarder si des sites proches partages plus de plantes. 
+
+$d_{ii'}$ distance entre les sites $i$ et $i'$. 
+
+$$Y^S_{ii'} | Z_i  = k, Z_{i' = \ell} \sim \mathcal{P}(\exp(\alpha_{k\ell}+ \beta d_{ii'}))$$
+
+C'est exactement comme dans la [vignette du package](https://grosssbm.github.io/sbm/articles/SBM_fungus_tree_network.html)
+
+
+## Comparing networks
+
+
+Si on veut comparer 2 réseaux correpsondants à 2 périodes. Il faut que les 2 réseaux  soient sur les mêmes noeuds (même site, même plantes). 
+- si certains sites manquent : on crée une grande matrice avec tous les sites, et on met les valeurs "NA" si ils n'ont pas été observés durant une des période. 
+- pour les plantes: on considère la collection totale des plantes et on met $0$ si on n'a pas vue ceratines plantes sur une période. 
+
+$$(Y^1, Y^2) | Z_i = k ,Z_j = l \sim \mathcal{F}(\theta_{kl})$$
+
+
+où $\mathcal{F}(\theta_{kl})$ est une loi bivariée. 
+On alaors plusieurs solutions: 
+
+- Si les $Y^1$ et $Y^2$ sont des compatges, on mettra 2 Poissons indépendantes. 
+- Si  Y^1 et $Y^2$ sont des $0/1$, on peut poser des Bernoulli indépendantes ou dépendantes. 
+
+Tu as 2 vignettes  dans le package là dessus 
+
+- [principe](https://grosssbm.github.io/sbm/articles/MultiplexNetwork_principle.html)
+- [application](https://grosssbm.github.io/sbm/articles/Multiplex_allianceNwar_case_study.html)
