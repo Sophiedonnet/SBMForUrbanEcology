@@ -8,7 +8,7 @@ source('functions_PiedsArbres.R')
 
 
 #"------------------- données envoyées par ? 
-dataPiedsArbres <- read.delim("TB 2009-2018.txt")
+dataPiedsArbres <- read.delim("data/TB 2009-2018.txt")
 
 #-------------------- 
 dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_taxa = as.factor(TB_taxa)) %>% mutate(soil = as.factor(TB_soil.grill))
