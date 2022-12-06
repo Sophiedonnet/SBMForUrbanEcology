@@ -8,7 +8,7 @@ source('functions_PiedsArbres.R')
 
 
 #"------------------- données envoyées par ? 
-dataPiedsArbres <- read.delim("data/TB 2009-2018.txt")
+dataPiedsArbres <- read.delim("TB 2009-2018.txt")
 
 #-------------------- 
 dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_taxa = as.factor(TB_taxa)) %>% mutate(soil = as.factor(TB_soil.grill))
@@ -94,3 +94,30 @@ mySBM_bern_2 <- estimateMultipartiteSBM(list(mySBM))
 
 mySBM_bern$blockProp$col*100
 
+##Ajouts de moi pour exporter la composition de chaque groupe
+df1 <- data.frame(Nom_pa = names(SitePlant), gr_1 = mySBM_bern$indMemberships$row[,1],
+                  gr_2 = mySBM_bern$indMemberships$row[,2],
+                  gr_3 = mySBM_bern$indMemberships$row[,3])
+print(df1)
+
+write.csv(df1,"/home/alouvet/Documents/PhD/project_communities_tree_bases/ECOLOGIE_URBAINE/res/groupes_sites.csv", row.names = TRUE)
+
+df2 <- data.frame(espece = colnames(matSitePlant), gr_1 = mySBM_bern$indMemberships$col[,1],
+                  gr_2 = mySBM_bern$indMemberships$col[,2],
+                  gr_3 = mySBM_bern$indMemberships$col[,3],
+                  gr_4 = mySBM_bern$indMemberships$col[,4],
+                  gr_5 = mySBM_bern$indMemberships$col[,5],
+                  gr_6 = mySBM_bern$indMemberships$col[,6],
+                  gr_7 = mySBM_bern$indMemberships$col[,7],
+                  gr_8 = mySBM_bern$indMemberships$col[,8],
+                  gr_9 = mySBM_bern$indMemberships$col[,9],
+                  gr_10 = mySBM_bern$indMemberships$col[,10],
+                  gr_11 = mySBM_bern$indMemberships$col[,11],
+                  gr_12 = mySBM_bern$indMemberships$col[,12],
+                  gr_13 = mySBM_bern$indMemberships$col[,13],
+                  gr_14 = mySBM_bern$indMemberships$col[,14],
+                  gr_15 = mySBM_bern$indMemberships$col[,15])
+
+print(df2)
+
+write.csv(df2,"/home/alouvet/Documents/PhD/project_communities_tree_bases/ECOLOGIE_URBAINE/res/groupes_plantes.csv", row.names = TRUE)
