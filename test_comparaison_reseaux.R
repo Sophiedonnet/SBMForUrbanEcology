@@ -7,7 +7,7 @@ library(reshape2)
 source('functions_PiedsArbres.R')
 
 #Chargement des donnees - Periode 2014-2018
-data2014_2018 = read.delim('network_2014_2018.txt', header = TRUE)
+data2014_2018 = read.delim('dataAppoline/network_2014_2018.txt', header = TRUE)
 siteNames <- data2014_2018$STREET
 data2014_2018 <- data2014_2018[,-1]
 mat2014_2018 <- as.matrix(data2014_2018)
@@ -19,7 +19,7 @@ dim(mat2014_2018)
 plotMyMatrix(mat2014_2018,dimLabels =  c('Sites','Plants'))
 
 #Chargement des donnees - Periode 2009-2012
-data2009_2012 = read.delim('network_2009_2012.txt', header = TRUE)
+data2009_2012 = read.delim('dataAppoline/network_2009_2012.txt', header = TRUE)
 siteNames <- data2009_2012$STREET
 data2009_2012 <- data2009_2012[,-1]
 mat2009_2012 <- as.matrix(data2009_2012)
@@ -36,17 +36,23 @@ sbm2009_2012 = defineSBM(mat2009_2012,model='bernoulli',dimLabels = c("Pieds d'a
 listMultiplex = list(sbm2009_2012,sbm2014_2018)
 plotMyMultiplexMatrix(listMultiplex)
 
-res = estimateMultiplexSBM(listMultiplex)
+#res = estimateMultiplexSBM(listMultiplex,dependent = TRUE)
+save(res,file='res/res_mutiplexeDependentsbm_2009_2012_2014_2018.Rdata')
+load(file='res/res_mutiplexeDependentsbm_2009_2012_2014_2018.Rdata')
 res$storedModels
-plot(res)
-plot(res, type = 'expected')
-save(res, file = 'multiplexIndep.RData')
+g <- plot(res,plotOptions = list(line.width=0.1))
+g
+plot(res, type = 'expected',plotOptions = list(line.width=0.1))
 
-resDep = estimateMultiplexSBM(listMultiplex, dependent = TRUE)
-resDep$storedModels
-plot(resDep, type = 'expected')
-plot(resDep)
+res$connectParam
 
-save(resDep, file = 'multiplexDep.RData')
+
+
+^#resDep = estimateMultiplexSBM(listMultiplex,estimOptions = list(init.SBM = TRUE))
+#resDep$storedModels
+#plot(resDep, type = 'expected')
+#plot(resDep)
+
+#save(resDep, file = 'multiplexDep.RData')
 
 
