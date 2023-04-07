@@ -48,7 +48,7 @@ res$connectParam
 
 
 
-^#resDep = estimateMultiplexSBM(listMultiplex,estimOptions = list(init.SBM = TRUE))
+#resDep = estimateMultiplexSBM(listMultiplex,estimOptions = list(init.SBM = TRUE))
 #resDep$storedModels
 #plot(resDep, type = 'expected')
 #plot(resDep)
