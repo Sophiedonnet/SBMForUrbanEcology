@@ -17,7 +17,7 @@ dataPiedsArbres_2014_2018 <- dataPiedsArbres_2014_2018 %>% mutate(site = as.fact
 dataPiedsArbres_2014_2018 <- dataPiedsArbres_2014_2018 %>% mutate(TB_tree = as.factor(TB_tree))
 dataPiedsArbres_2014_2018 <- dataPiedsArbres_2014_2018 %>% mutate(DATE = as.POSIXct(DATE, format = "%d/%m/%Y")) %>% mutate(YEAR = format(DATE, format="%Y")) %>%  mutate(MONTH = format(DATE, format="%m"))
 #dataPiedsArbres_2014_2018 <- dataPiedsArbres_2014_2018 %>% mutate(TB_taxa = fct_collapse(A = c("A","B")))
-
+dataPiedsArbres_2014_2018$site[dataPiedsArbres_2014_2018$site=='BERC_008 bis'] <- "BERC_008bis" 
 ################### QUICK EXPLORATION
 #- Types d'arbres  
 dataPiedsArbres_2014_2018%>% group_by(site,TB_tree) %>%summarise(n = n(),.groups = 'drop') %>% ggplot(aes(x=TB_tree))+geom_bar() +coord_flip() +  scale_fill_brewer(palette='Greens') + ggtitle("Tree Species")
@@ -52,7 +52,7 @@ dim(matSitePlant_2014_2018)
 plotMyMatrix(matSitePlant_2014_2018,dimLabels = c('Sites','Plants'))
 dim(matSitePlant_2014_2018) 
 
-
+table(descriptSites_2014_2018$STREET)
 ##############################################################"
 #------------- Binary Bipartite Bern  
 #################################################################
@@ -80,15 +80,12 @@ ggplot(longData_2014_2018, aes(x = Var2, y = Var1)) +
                      plot.title=element_text(size=11))
 
 #------------- Exploitation groupes 
-
-
-##Ajouts de moi pour exporter la composition de chaque groupe
 df1 <- data.frame(Nom_pa = names(SitePlant_2014_2018))
 df1 <- cbind(df1,mySBM_bern_2014_2018$indMemberships$row)
 colnames(df1) <- c('Nom_pa',paste0('gr_',1:4))
 print(df1)
 
-write.csv(df1,"/home/alouvet/Documents/PhD/project_communities_tree_bases/ECOLOGIE_URBAINE/res/groupes_sites_2014_2018.csv", row.names = TRUE)
+#write.csv(df1,"/home/alouvet/Documents/PhD/project_communities_tree_bases/ECOLOGIE_URBAINE/res/groupes_sites_2014_2018.csv", row.names = TRUE)
 
 df2 <- data.frame(espece = colnames(matSitePlant_2014_2018))
 df2 <- cbind(df2,mySBM_bern_2014_2018$indMemberships$col)
@@ -116,9 +113,7 @@ write.csv(df2,"/home/alouvet/Documents/PhD/project_communities_tree_bases/ECOLOG
 #################################################################
 #------------------ data
 plotMyMatrix(matSitePlant_2014_2018,dimLabels =  c('Sites','Plants'))
-
-hist(rowSums(matSitePlant_bin_2014_2018))
-hist(colSums(matSitePlant_bin_2014_2018))
+ 
 
 #--------------  Estimation
 #mySBM_pois_2014_2018 <- estimateBipartiteSBM(matSitePlant_2014_2018,model = 'poisson',dimLabels = c('Sites','Plants'))
@@ -128,9 +123,9 @@ plot(mySBM_pois_2014_2018,plotOptions = list(line.width = 1/10))
 
 #---------------- Plot
 ## plot connexion matrix
-longData_2014_2018<-melt(mySBM_pois_2014_2018$connectParam)
-longData_2014_2018<-longData_2014_2018[longData_2014_2018$value!=0,]
-ggplot(longData_2014_2018, aes(x = Var2, y = Var1)) + 
+longData_2014_2018_pois<-melt(mySBM_pois_2014_2018$connectParam)
+longData_2014_2018_pois<-longData_2014_2018_pois[longData_2014_2018_pois$value!=0,]
+ggplot(longData_2014_2018_pois, aes(x = Var2, y = Var1)) + 
   geom_raster(aes(fill=value)) +   scale_fill_gradient(low="grey90", high="red") +   labs(x="Plant Blocks", y="Site blocks", title="Connexion matrix") +
   theme_bw() +coord_equal()+ theme(axis.text.x=element_text(size=9, angle=0, vjust=0.3),
                                    axis.text.y=element_text(size=9),
@@ -147,16 +142,26 @@ plotAlluvial(list(Bern=mySBM_bern_2014_2018$memberships$Plants,Pois=mySBM_pois_2
 ##################################################################
 #------------------ Utilisation des covariables sur les sites?
 ###################################################################
+#--------------- GRID / STREET
+table(GRID=descriptSites_2014_2018$TB_soil.grill,STREET=descriptSites_2014_2018$STREET)
+table(GRID=descriptSites_2014_2018$TB_tree,STREET=descriptSites_2014_2018$STREET)
+
+
+
 
 #------------- Grid or Soil
 plotAlluvial(list(ClustBin=mySBM_bern_2014_2018$memberships$Sites,descriptSites_2014_2018$TB_soil.grill))
 plotAlluvial(list(ClustPois=mySBM_pois_2014_2018$memberships$Sites,descriptSites_2014_2018$TB_soil.grill))
 
 #------------- Street
-plotAlluvial(list(ClustPois=mySBM_bern_2014_2018$memberships$Sites,descriptSites_2014_2018$STREET))
-table(ClustBin=mySBM_bern_2014_2018$memberships$Sites,STREET=descriptSites_2014_2018$STREET)
+plotAlluvial(list(ClustBin=mySBM_bern_2014_2018$memberships$Sites,descriptSites_2014_2018$STREET))
+plotAlluvial(list(ClustPois=mySBM_pois_2014_2018$memberships$Sites,descriptSites_2014_2018$STREET))
+
+
+table(ClustPois=mySBM_pois_2014_2018$memberships$Sites,STREET=descriptSites_2014_2018$STREET)
 
 #---------------Species
-plotAlluvial(list(ClustBin=mySBM_bern_2014_2018$memberships$Sites,TreeSpecies=descriptSites_2014_2018$TB_tree,STREET=descriptSites_2014_2018$STREET))
-table(ClustBin=mySBM_pois_2014_2018$memberships$Sites,STREET=descriptSites_2014_2018$STREET)
+plotAlluvial(list(ClustPois=mySBM_pois_2014_2018$memberships$Sites,TreeSpecies=descriptSites_2014_2018$TB_tree))
+
+table(ClustPois=mySBM_pois_2014_2018$memberships$Sites,Tree=descriptSites_2014_2018$TB_tree)
 

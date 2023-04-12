@@ -36,8 +36,18 @@ sbm2009_2012 = defineSBM(mat2009_2012,model='bernoulli',dimLabels = c("Pieds d'a
 listMultiplex = list(sbm2009_2012,sbm2014_2018)
 plotMyMultiplexMatrix(listMultiplex)
 
-#res = estimateMultiplexSBM(listMultiplex,dependent = TRUE)
-save(res,file='res/res_mutiplexeDependentsbm_2009_2012_2014_2018.Rdata')
+#res = estimateMultiplexSBM(listMultiplex,dependent = TRUE,estimOptions = )
+#save(res,file='res/res_mutiplexeDependentsbm_2009_2012_2014_2018.Rdata')
+
+
+#plot layer 1 
+param2014_2018 <- defineSBM(res$connectParam$prob01+res$connectParam$prob11,model='gaussian',dimLabels = c("Blocks Site", "Blocks Species")) 
+param2009_2012 <-  defineSBM(res$connectParam$prob10+res$connectParam$prob11,model='gaussian',dimLabels = c("Blocks Site", "Blocks Species")) 
+plotMyMultipartiteMatrix(list(param2009_2012,param2014_2018))
+
+
+
+  
 load(file='res/res_mutiplexeDependentsbm_2009_2012_2014_2018.Rdata')
 res$storedModels
 g <- plot(res,plotOptions = list(line.width=0.1))
