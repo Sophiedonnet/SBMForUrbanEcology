@@ -10,69 +10,57 @@ library(gtools)
 source('functions_PiedsArbres.R')
 #------------------------------------------------------------------- 
 
+########################### 
+modifDataPiedArbres = function(dataPiedsArbres){
+  dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_taxa = as.factor(TB_taxa)) %>% mutate(soil = as.factor(TB_soil.grill))
+  dataPiedsArbres <- dataPiedsArbres %>% mutate(STREET_number  =  TB_number..in.the.street.)
+  dataPiedsArbres <- dataPiedsArbres %>% mutate(site = as.factor(paste(STREET,STREET_number,sep="_")))
+  dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_tree = as.factor(TB_tree))
+  dataPiedsArbres <- dataPiedsArbres %>% mutate(DATE = as.POSIXct(DATE, format = "%d/%m/%Y")) %>% mutate(YEAR = format(DATE, format="%Y")) %>%  mutate(MONTH = format(DATE, format="%m"))
+  dataPiedsArbres$site[dataPiedsArbres$site=='BERC_008 bis'] <- "BERC_008bis" 
+  return(dataPiedsArbres)
+}
+
+buildMatrixSitePlants  = function(dataPiedsArbres){
+  SitePlant  <- dataPiedsArbres %>%  count(site,TB_taxa) %>% pivot_wider(names_from = site, values_from = n, values_fill = list(n = 0))
+  plantNames <- SitePlant$TB_taxa
+  SitePlant  <- SitePlant[,-1]
+  matSitePlant<- t(as.matrix(SitePlant))
+  colnames(matSitePlant) <- plantNames
+  o <- order(colnames(matSitePlant))
+  matSitePlant <- matSitePlant[,o]
+  
+  #------------------- 
+  w.rm <- c(which(plantNames[o]=='(na)'),which(plantNames[o]=='Sp.'),which(plantNames[o]=='sp.?'))
+  if (length(w.rm)>1){
+    na.column <- rowSums(matSitePlant[,w.rm]) 
+  }
+  if(length(w.rm)==1){
+    na.column <- matSitePlant[,w.rm] 
+  }
+  matSitePlant <- matSitePlant[,-w.rm] # remove name plant = na
+  matSitePlant <- cbind(matSitePlant, na.column) # add the unique na column
+  colnames(matSitePlant)[ncol(matSitePlant)] = '(na)'
+  return(matSitePlant)
+}
 ################################################################################
 ################### DATA #######################################################
 ################################################################################
 
 
 years <- "2014_2018"
-#"------------------- données envoyées par ? 
-dataPiedsArbres <- read.delim(paste0("Tree_bases_",years,".txt"))
+dataPiedsArbres_2014_2018 <- modifDataPiedArbres(read.delim(paste0("Tree_bases_",years,".txt")))
+matSitePlant_2014_2018 <- buildMatrixSitePlants(dataPiedsArbres_2014_2018)
+
 #-------------------- 
-dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_taxa = as.factor(TB_taxa)) %>% mutate(soil = as.factor(TB_soil.grill))
-dataPiedsArbres <- dataPiedsArbres %>% mutate(STREET_number  =  TB_number..in.the.street.)
-dataPiedsArbres <- dataPiedsArbres %>% mutate(site = as.factor(paste(STREET,STREET_number,sep="_")))
-dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_tree = as.factor(TB_tree))
-dataPiedsArbres_2014_2018 <- dataPiedsArbres %>% mutate(DATE = as.POSIXct(DATE, format = "%d/%m/%Y")) %>% mutate(YEAR = format(DATE, format="%Y")) %>%  mutate(MONTH = format(DATE, format="%m"))
-dataPiedsArbres_2014_2018$site[dataPiedsArbres_2014_2018$site=='BERC_008 bis'] <- "BERC_008bis" 
 
-
-
-### descripteurs  Sites
-###############" CREATE one matrix plant - site
-SitePlant  <- dataPiedsArbres_2014_2018 %>%  count(site,TB_taxa) %>% pivot_wider(names_from = site, values_from = n, values_fill = list(n = 0))
-plantNames <- SitePlant$TB_taxa
-SitePlant  <- SitePlant[,-1]
-matSitePlant<- as.matrix(SitePlant)
-colnames(matSitePlant) <- names(SitePlant)
-rownames(matSitePlant) <- plantNames
-w.rm <- c(which(plantNames=='(na)'),which(plantNames=='Sp.'),which(plantNames=='sp.?'))
-matSitePlant <- matSitePlant[-w.rm,] # remove name plant = na
-matSitePlant_2014_2018 <- t(matSitePlant)
-dim(matSitePlant_2014_2018)
-
-
-list_plants_2014_2018 <- colnames(matSitePlant_2014_2018)
-matSitePlant_2014_2018 <- matSitePlant_2014_2018[,order(colnames(matSitePlant_2014_2018))]
-
-#################################################" 
 
 years <- "2009_2012"
-#"------------------- données envoyées par ? 
-dataPiedsArbres <- read.delim(paste0("Tree_bases_",years,".txt"))
-#-------------------- 
-dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_taxa = as.factor(TB_taxa)) %>% mutate(soil = as.factor(TB_soil.grill))
-dataPiedsArbres <- dataPiedsArbres %>% mutate(STREET_number  =  TB_number..in.the.street.)
-dataPiedsArbres <- dataPiedsArbres %>% mutate(site = as.factor(paste(STREET,STREET_number,sep="_")))
-dataPiedsArbres <- dataPiedsArbres %>% mutate(TB_tree = as.factor(TB_tree))
-dataPiedsArbres_2009_2012 <- dataPiedsArbres%>% mutate(DATE = as.POSIXct(DATE, format = "%d/%m/%Y")) %>% mutate(YEAR = format(DATE, format="%Y")) %>%  mutate(MONTH = format(DATE, format="%m"))
-dataPiedsArbres_2009_2012$site[dataPiedsArbres_2009_2012$site=='BERC_008 bis'] <- "BERC_008bis" 
+dataPiedsArbres_2009_2012 <- modifDataPiedArbres(read.delim(paste0("Tree_bases_",years,".txt")))
+matSitePlant_2009_2012 <- buildMatrixSitePlants(dataPiedsArbres_2009_2012)
 
 
 
-###############" CREATE one matrix plant - site
-SitePlant  <- dataPiedsArbres_2009_2012 %>%  count(site,TB_taxa) %>% pivot_wider(names_from = site, values_from = n, values_fill = list(n = 0))
-plantNames <- SitePlant$TB_taxa
-SitePlant  <- SitePlant[,-1]
-matSitePlant<- as.matrix(SitePlant)
-colnames(matSitePlant) <- names(SitePlant)
-rownames(matSitePlant) <- plantNames
-w.rm <- c(which(plantNames=='(na)'),which(plantNames=='Sp.'),which(plantNames=='sp.?'))
-matSitePlant <- matSitePlant[-w.rm,] # remove name plant = na
-matSitePlant_2009_2012 <- t(matSitePlant)
-dim(matSitePlant_2009_2012)
-
-matSitePlant_2009_2012 <- matSitePlant_2009_2012[,order(colnames(matSitePlant_2009_2012))]
 
 
 ################################################################### Complete Matrices
